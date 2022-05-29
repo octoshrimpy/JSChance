@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="jschance.js"></script>
+    <script type="text/javascript">
+      console.log((new JsChance(`
+      generate
+        [landscape.[landtype].[color]]
+
+      landtype
+        natural
+        manmade
+
+      color
+        blue
+        purple
+
+      landscape.natural.blue
+        ice cave
+        snow fields
+
+      landscape.natural.purple
+        swamp
+        giant skull
+
+      landscape.manmade.blue
+        ice harvesting
+        town
+
+      landscape.manmade.purple
+        animal traps
+        battlefield
+      `)).generate());
+
+      console.log((new JsChance(`
+      animal
+        cow
+        bat
+        sheep
+
+      landscape
+        natural
+          blue
+            ice cave
+            snow fields
+          purple
+            swamp
+            giant skull
+        manmade
+          blue
+            ice harvesting
+            town
+          purple
+            [animal] traps
+            battlefield
+      `)).landscape());
+    </script>
+  </head>
+  <body>
+
+  </body>
+</html>
