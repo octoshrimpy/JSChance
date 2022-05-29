@@ -110,11 +110,10 @@ class JsChance {
     let self = this
     if (!fnName) { return }
 
-    self.options[fnName] = this.branchesFromJson(json_options)
+    self.options[fnName] = json_options
     self[fnName] = function() {
-      let opts = self.options[fnName]
+      let opts = this.branchesFromJson(json_options)
       var option = opts[Math.floor(Math.random() * opts.length)]
-      // Parse functions and whatnot
       option[option.length-1] = self.constructor.parseText(option[option.length-1], self)
 
       return option.length <= 1 ? option[0] : option

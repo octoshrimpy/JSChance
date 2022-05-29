@@ -32,7 +32,7 @@
       landscape.manmade.purple
         animal traps
         battlefield
-      `)).generate());
+      `)).generate())
 
       console.log((new JsChance(`
       animal
@@ -55,10 +55,48 @@
           purple
             [animal] traps
             battlefield
-      `)).landscape());
+      `)).landscape())
+
+      let parser = new JsChance(`
+      animal
+        cow
+        bat
+        sheep
+
+      landscape
+        natural
+          blue
+            ice cave
+            snow fields
+          purple
+            swamp
+            giant skull
+        manmade
+          blue
+            ice harvesting
+            town
+          purple
+            [animal] traps
+            battlefield
+      `)
     </script>
   </head>
   <body>
+    <h3>HowTo</h3>
+    <ul>
+      <li>Indent items in a list with 2 spaces</li>
+      <li>You can have as many items in a list as you want.</li>
+      <li>Pull an item from a list using square brackets around the list name. [animal] will be replaced with an item from a list titled "animal"</li>
+      <li>Number ranges can also be used by using a range in square brackets [1-6] will simulate a dice roll.</li>
+      <li>Nested lists will result in an array showing each level it pulled from.</li>
+      <li>`parser.options` is a special object that will show all of the possibilities for a list. These are JS objects, so you can dig down using dot operators. `parser.options.landscape.natural.blue`</li>
+    </ul>
+    <h3>TODO</h3>
+    <ul>
+      <li>Weighted items ^2 makes an item twice as likely, ^0.1 for 1/10th as likely as others</li>
+      <li>Inline? generate = [landscape.[landtype].[color]]</li>
+      <li>Lookahead/behind {a} [animal] becomes AN antelope, </li>
+    </ul>
 
   </body>
 </html>
