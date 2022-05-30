@@ -13,7 +13,9 @@ class JsChance {
   }
 
   static textToJson(text) {
-    let lines = this.getLinesFromString(text)
+    let lines = text.split("\n").filter(function(word) {
+      return word.replace(/\s/ig, "").length > 0
+    })
 
     let json = {}, current_obj = json, parents = [], prev_key = undefined, prev_indent = -1
     let regx_indent = new RegExp("  ", "g")
@@ -123,66 +125,72 @@ class JsChance {
       this.genFunction(key, opts)
     }
   }
-
-  getLinesFromString(text){
-    return lines = text.split("\n").filter(function(word) {
-    return word.replace(/\s/ig, "").length > 0
-    })
-  }
 }
-
 // ===================
 // preprocessor
 
-class PreProcessor{
-  static spacingOptions = {
-    TWOSPACE: "  ",
-    FOURSPACE: "    ",
-    TAB: "	"
+class PreProcessor {
+  spacingOptions = {
+    TWOSPACE: {
+      literal: "  ",
+      regexSelector: /\s{2}/g 
+    },
+    FOURSPACE: {
+      literal: "    ",
+      regex: /\s{4}/g
+    },
+    TAB: {
+      literal: "	",
+      regex: /\t/g
+    }
   }
 
-  constructor(text) {
-    let processedText = main(text)
-    this.spacing = spacingOptions.TWOSPACE
-    return processedText
-  }
+  constructor() {}
 
-  main(text) {
-    // @todo rocco clean this up lmao
-    let lines = this.getLinesFromString(text)
+  // @todo rocco clean this up lmao
+  parse(text) {
+    this.spacing = this.spacingOptions.TWOSPACE
+    let lines = text.split("\n")
+
     this.shouldBeIndented = false
 
     let self = this 
-    lines.forEach(function(line) {
-      line = self.normalizeIndents(line)
-      line = self.removeMdList(line)
-      line = self.indentHeaderChildLine(line)
-
+    self.detectedIndentCount = this.detectIndent(lines)
+    lines = lines.map(function(line, idx) {
+      lines[idx] = self.tabsToSpaces(line)
+      lines[idx] = self.normalizeIndents(line)
+      lines[idx] = self.removeMdList(line)
+      lines[idx] = self.indentHeaderChildLine(line)
     })
-  }
-
-  getLinesFromString(text){
-    return text.split("\n")
+    console.log(lines.join('\n'))
+    return lines.join('\n')
   }
 
   removeMdList(text) {
     let mdListRegex = /(?<=^(\s+)?)((\d+\.\s)|(\*\s)|(\-\s))/g
     return text.replace(mdListRegex, "")
   }
-  normalizeIndents(line) {
 
+  tabsToSpaces(line) {
+    return line.replace(/\t/g, this.spacingOptions.TWOSPACE.literal)
   }
-  indentHeaderChildLines(line) {
+
+  normalizeIndents(line) {
+    return line.replace(`/\s{${this.detectedIndentCount}}/g`, this.spacing.literal)
+  }
+
+  indentHeaderChildLine(line) {
     if (line.startsWith("## ")) { 
       this.shouldBeIndented = true
       let lineHeaderStartRegex = /(?<=^)##\s/g
       line.replace(lineHeaderStartRegex, "* ")
+      // console.log("line: ", line)
     }
     if (!line) {
       this.shouldBeIndented = false
     }
 
-    line = this.spacing + line
+    return this.spacing.literal + line
   }
 
   //https://medium.com/firefox-developer-tools/detecting-code-indentation-eff3ed0fb56b
@@ -191,7 +199,8 @@ class PreProcessor{
     var last = 0;     // # leading spaces in the last line we saw
   
     lines.forEach(function (text) {
-      var width = leadingSpaces(text);
+      // var width = this.detectIndent(text); .// replaced with regex below
+      var width = text.match(/^\s*/)[0].length;
   
       var indent = Math.abs(width - last);
       if (indent > 1) {
@@ -210,7 +219,61 @@ class PreProcessor{
         indent = width;
       }
     }
-  
     return indent;
   }
 }
+
+
+//=====
+
+let string = `
+# landmarks
+
+## blue
+* natural
+  1. Series of small waterfalls
+  1. Small "empty" lake 
+    * Water is crystal clear
+  1. Reflective ponds 
+    * You cannot see the bottom of it
+  1. Waterfall 
+    * Reverses direction of water on full moon
+    * Just the waterfall, not the rest of water around it
+  1. Left-footed water
+    * To penetrate water, first stick your left foot in.
+    * Anyone stepping into water with their right foot will walk on the water. 
+  1. Three worried stones 
+    * They're looking into a lake
+    * They disappear when not being looked at
+    * Found hiding nearby
+    * Reappear by lake if nobody nearby
+* manmade
+  1. Grounded pirate ship
+  1. Offensive statue
+    * Labelled as "the \`1d6 adjective\` person alive"
+    * Changes how it looks to be whoever is currently looking at it
+  <!-- @think Revise adjectives to be all one-word negatives -->
+    1. Ugliest
+    2. Dumbest
+    3. Most indecisive
+    4. Most incompetent
+    5. Most ambitious
+    6. Most clumsy
+  1. Large well
+    * Bottom leads to air-filled underwater glass-walled dungeon
+  1. Floating boulder
+    * Carved with glowing script that describes what is happening around it this very moment
+  1. Large arcs 
+    * Were used as portals but are deactivated now
+    * Carved runes glow softly on the surface
+  1. Library 
+    * Maintained by ghosts with no voice 
+    * All the books are filled with proper titles and chapter headings, but the contents of the pages are nonsense
+`
+let preprocessor = new PreProcessor()
+let processed = preprocessor.parse(string)
+// console.log(processed)
+let parsed    = new JsChance(processed)
+
+// console.log(string)
+// console.log(parsed)
