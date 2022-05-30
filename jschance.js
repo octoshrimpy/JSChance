@@ -156,11 +156,13 @@ class PreProcessor {
 
     let self = this 
     self.detectedIndentCount = this.detectIndent(lines)
-    lines = lines.map(function(line, idx) {
-      lines[idx] = self.tabsToSpaces(line)
-      lines[idx] = self.normalizeIndents(line)
-      lines[idx] = self.removeMdList(line)
-      lines[idx] = self.indentHeaderChildLine(line)
+    lines = lines.map(function(line) {
+      line = self.tabsToSpaces(line)
+      line = self.normalizeIndents(line)
+      line = self.removeMdList(line)
+      line = self.indentHeaderChildLine(line)
+
+      return line
     })
     console.log(lines.join('\n'))
     return lines.join('\n')
