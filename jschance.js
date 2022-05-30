@@ -13,9 +13,7 @@ class JsChance {
   }
 
   static textToJson(text) {
-    let lines = text.split("\n").filter(function(word) {
-      return word.replace(/\s/ig, "").length > 0
-    })
+    let lines = this.getLinesFromString(text)
 
     let json = {}, current_obj = json, parents = [], prev_key = undefined, prev_indent = -1
     let regx_indent = new RegExp("  ", "g")
@@ -124,5 +122,95 @@ class JsChance {
     for (let [key, opts] of Object.entries(this.json)) {
       this.genFunction(key, opts)
     }
+  }
+
+  getLinesFromString(text){
+    return lines = text.split("\n").filter(function(word) {
+    return word.replace(/\s/ig, "").length > 0
+    })
+  }
+}
+
+// ===================
+// preprocessor
+
+class PreProcessor{
+  static spacingOptions = {
+    TWOSPACE: "  ",
+    FOURSPACE: "    ",
+    TAB: "	"
+  }
+
+  constructor(text) {
+    let processedText = main(text)
+    this.spacing = spacingOptions.TWOSPACE
+    return processedText
+  }
+
+  main(text) {
+    // @todo rocco clean this up lmao
+    let lines = this.getLinesFromString(text)
+    this.shouldBeIndented = false
+
+    let self = this 
+    lines.forEach(function(line) {
+      line = self.normalizeIndents(line)
+      line = self.removeMdList(line)
+      line = self.indentHeaderChildLine(line)
+
+    })
+  }
+
+  getLinesFromString(text){
+    return text.split("\n")
+  }
+
+  removeMdList(text) {
+    let mdListRegex = /(?<=^(\s+)?)((\d+\.\s)|(\*\s)|(\-\s))/g
+    return text.replace(mdListRegex, "")
+  }
+  normalizeIndents(line) {
+
+  }
+  indentHeaderChildLines(line) {
+    if (line.startsWith("## ")) { 
+      this.shouldBeIndented = true
+      let lineHeaderStartRegex = /(?<=^)##\s/g
+      line.replace(lineHeaderStartRegex, "* ")
+    }
+    if (!line) {
+      this.shouldBeIndented = false
+    }
+
+    line = this.spacing + line
+  }
+
+  //https://medium.com/firefox-developer-tools/detecting-code-indentation-eff3ed0fb56b
+  detectIndent(lines) {
+    var indents = {}; // # spaces indent -> # times seen
+    var last = 0;     // # leading spaces in the last line we saw
+  
+    lines.forEach(function (text) {
+      var width = leadingSpaces(text);
+  
+      var indent = Math.abs(width - last);
+      if (indent > 1) {
+        indents[indent] = (indents[indent] || 0) + 1;
+      }
+      last = width;
+    });
+  
+    // find most frequent non-zero width difference
+    var indent = null, max = 0;
+    for (var width in indents) {
+      width = parseInt(width, 10);
+      var tally = indents[width];
+      if (tally > max) {
+        max = tally;
+        indent = width;
+      }
+    }
+  
+    return indent;
   }
 }

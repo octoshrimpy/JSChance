@@ -1,0 +1,44 @@
+# name of list
+
+## color
+
+    * item 
+    1. item 
+    22. item
+        - item 
+
+## color
+
+    * item 
+    1. item 
+    22. item
+        - item 
+
+
+// before
+
+## color
+
+* item
+    * item 
+    1. item 
+    22. item
+        - item 
+
+
+// after
+
+color
+    item
+        item 
+        item 
+        item
+            item 
+
+
+
+handle list items
+/    (?<=^(\s+)?)((\d+\.\s)|(\*\s)|(\-\s))    /g
+
+handle title of document (single #)
+/    (?<=^)\#\s    /g
